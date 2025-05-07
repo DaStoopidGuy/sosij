@@ -9,22 +9,26 @@ enum TokenType {
     TOKEN_MINUS,
     TOKEN_STAR,
     TOKEN_SLASH,
+    TOKEN_LESS, // <
+    TOKEN_GREATER, // >
     TOKEN_EQUALS,
     TOKEN_LPAREN,
     TOKEN_RPAREN,
-    TOKEN_LCURLY,
-    TOKEN_RCURLY,
+    TOKEN_LBRACE,
+    TOKEN_RBRACE,
+    TOKEN_COMMA,
     TOKEN_SEMICOLON,
+    TOKEN_STRING, // string literal ("This is a string")
     TOKEN_EOF, // End Of File, Khatm. Tata. Bye-bye.
     TOKEN_UNKNOWN,
 };
 
-struct Token {
+typedef struct {
     enum TokenType type;
     char *data;
     size_t len;
-};
+} Token;
 
 void lexer_init(const char* input);
-struct Token token_next();
-void token_print(struct Token t);
+Token token_next();
+void token_print(Token t);

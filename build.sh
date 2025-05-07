@@ -1,7 +1,7 @@
 #! /usr/bin/bash
 
 SRC=src/*.c
-OUT=bin/app
+OUT=out/app
 
 # compile
 compile() {

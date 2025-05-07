@@ -25,7 +25,8 @@ bool is_digit(char c) {
 }
 
 const char *keywords[] = {
-    "let", "if"
+    "let", "if", "return", "use",
+    "not", "and", "or"
 };
 
 bool is_keyword(const char *str, int len) {
@@ -39,54 +40,76 @@ bool is_keyword(const char *str, int len) {
 char *src;
 char *current;
 
+// get character at current ptr
+char peek() {
+    return *current;
+}
+
+// get current char, then increment by 1
+char advance() {
+    return *current++;
+}
+
 void lexer_init(const char* input) {
     src = (char*)input;
     current = src;
 }
 
-struct Token token_next() {
-    while(is_space(*current)) current++; // skip leading whitespace
+Token token_next() {
+    while(is_space(peek())) current++; // skip leading whitespace
 
     const char* start = current;
 
-    if (*current == '\0')
-        return (struct Token) { TOKEN_EOF };
+    if (peek() == '\0')
+        return (Token) { TOKEN_EOF };
 
-    char c = *current++; // get current char, then increment
+    char c = advance(); 
 
     // single-character tokens
     switch (c) {
-        case '+' : return (struct Token) { TOKEN_PLUS,      (char*)start, 1 };
-        case '-' : return (struct Token) { TOKEN_MINUS,     (char*)start, 1 };
-        case '*' : return (struct Token) { TOKEN_STAR,      (char*)start, 1 };
-        case '/' : return (struct Token) { TOKEN_SLASH,     (char*)start, 1 };
-        case '=' : return (struct Token) { TOKEN_EQUALS,    (char*)start, 1 };
-        case ';' : return (struct Token) { TOKEN_SEMICOLON, (char*)start, 1 };
-        case '(' : return (struct Token) { TOKEN_LPAREN,    (char*)start, 1 };
-        case ')' : return (struct Token) { TOKEN_RPAREN,    (char*)start, 1 };
-        case '{' : return (struct Token) { TOKEN_LCURLY,    (char*)start, 1 };
-        case '}' : return (struct Token) { TOKEN_RCURLY,    (char*)start, 1 };
+        case '+' : return (Token) { TOKEN_PLUS,      (char*)start, 1 };
+        case '-' : return (Token) { TOKEN_MINUS,     (char*)start, 1 };
+        case '*' : return (Token) { TOKEN_STAR,      (char*)start, 1 };
+        case '/' : return (Token) { TOKEN_SLASH,     (char*)start, 1 };
+        case '<' : return (Token) { TOKEN_LESS,    (char*)start, 1 };
+        case '>' : return (Token) { TOKEN_GREATER,    (char*)start, 1 };
+        case '=' : return (Token) { TOKEN_EQUALS,    (char*)start, 1 };
+        case ',' : return (Token) { TOKEN_COMMA,    (char*)start, 1 };
+        case ';' : return (Token) { TOKEN_SEMICOLON, (char*)start, 1 };
+        case '(' : return (Token) { TOKEN_LPAREN,    (char*)start, 1 };
+        case ')' : return (Token) { TOKEN_RPAREN,    (char*)start, 1 };
+        case '{' : return (Token) { TOKEN_LBRACE,    (char*)start, 1 };
+        case '}' : return (Token) { TOKEN_RBRACE,    (char*)start, 1 };
+    }
+
+    // string literal
+    if (c == '"') {
+        while (advance() != '"') {
+            if (peek() == '\0')
+                return (Token) { TOKEN_UNKNOWN, (char*)start, current - start };
+        }
+        return (Token) { TOKEN_STRING, (char*)start + 1, current - start - 2 };
     }
 
     // keywords / identifiers
     if (is_alpha(c)) {
-        while(is_alpha(*current) || is_digit(*current)) current++;
+        while(is_alpha(peek()) || is_digit(peek())) advance();
         int len = current - start;
         enum TokenType type = is_keyword(start, len) ? TOKEN_KEYWORD : TOKEN_IDENTIFIER;
-        return (struct Token) { type, (char*)start, len };
+        return (Token) { type, (char*)start, len };
     }
 
     // Numeros
-    if (is_digit(c)) { // TODO: floating point nums not supported
-        while(is_digit(*current)) current++;
-        return (struct Token) { TOKEN_NUMERIC, (char*)start, current - start };
+    if (is_digit(c)) {
+        while(is_digit(peek())) advance();
+        return (Token) { TOKEN_NUMERIC, (char*)start, current - start };
     }
 
     // Else, unknown token
-    return (struct Token) { TOKEN_UNKNOWN, (char*)start, 1 };
+    return (Token) { TOKEN_UNKNOWN, (char*)start, 1 };
 }
 
-void token_print(struct Token t) {
+void token_print(Token t) {
     char *typeStr = "";
     switch(t.type) {
         case TOKEN_KEYWORD: typeStr = "TOKEN_KEYWORD"; break;
@@ -96,12 +119,16 @@ void token_print(struct Token t) {
         case TOKEN_MINUS: typeStr = "TOKEN_MINUS"; break;
         case TOKEN_STAR: typeStr = "TOKEN_STAR"; break;
         case TOKEN_SLASH: typeStr = "TOKEN_SLASH"; break;
+        case TOKEN_LESS: typeStr = "TOKEN_LESS"; break;
+        case TOKEN_GREATER: typeStr = "TOKEN_GREATER"; break;
         case TOKEN_EQUALS: typeStr = "TOKEN_EQUALS"; break;
         case TOKEN_LPAREN: typeStr = "TOKEN_LPAREN"; break;
         case TOKEN_RPAREN: typeStr = "TOKEN_RPAREN"; break;
-        case TOKEN_LCURLY: typeStr = "TOKEN_LCURLY"; break;
-        case TOKEN_RCURLY: typeStr = "TOKEN_RCURLY"; break;
+        case TOKEN_LBRACE: typeStr = "TOKEN_LBRACE"; break;
+        case TOKEN_RBRACE: typeStr = "TOKEN_RBRACE"; break;
+        case TOKEN_COMMA: typeStr = "TOKEN_COMMA"; break;
         case TOKEN_SEMICOLON: typeStr = "TOKEN_SEMICOLON"; break;
+        case TOKEN_STRING: typeStr = "TOKEN_STRING"; break;
         case TOKEN_EOF: typeStr = "TOKEN_EOF"; break;
         case TOKEN_UNKNOWN: typeStr = "TOKEN_UNKNOWN"; break;
     }

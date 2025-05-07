@@ -6,5 +6,11 @@ also I am an ogre (^^)
 > Work in progress, coming soon... >:3  
 
 - strongly typed language
-- `var` is to declare variable (type inference)
-    - `<type-name>` can also be specified instead of `var` keyword
+- `let` is to declare variable (type inference)
+    - `<type-name>` can also be specified instead of `let` keyword
+
+# TODO
+- [ ] get simple hello world program working  
+    ```
+    print("Hello World");
+    ```

@@ -1,4 +1,7 @@
+#define ARENA_IMPLEMENTATION
+#include "arena.h"
 #include "lexer.h"
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -44,17 +47,20 @@ char* read_file_to_buffer(const char* filename) {
 }
 
 int main() {
-    printf("Hello World\n");
-
     const char* source = read_file_to_buffer("test.sosij");
 
-    lexer_init(source);
+    // lexer_init(source);
+    //
+    // struct Token t;
+    // do {
+    //     t = token_next();
+    //     token_print(t);
+    // } while(t.type != TOKEN_EOF);
 
-    struct Token t;
-    do {
-        t = token_next();
-        token_print(t);
-    } while(t.type != TOKEN_EOF || t.type == TOKEN_UNKNOWN);
+    Arena *parser_arena = arena_create(1024*1024*10); // 10 mB arena
+    parser_init(parser_arena, source);
+    parse_program();
 
+    arena_destroy(parser_arena);
     return 0;
 }
