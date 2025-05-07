@@ -10,7 +10,7 @@ also I am an ogre (^^)
     - `<type-name>` can also be specified instead of `let` keyword
 
 # TODO
-- [ ] get simple hello world program working  
+- [x] get simple hello world program working  
     ```
     print("Hello World");
     ```
