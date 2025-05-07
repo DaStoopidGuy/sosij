@@ -1,40 +1,12 @@
 #include "parser.h"
 #include "arena.h"
 #include "lexer.h"
+#include "string_view.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
-//------------------//
-// Type Definitions //
-//------------------//
-
-// here, node is what i am calling a distinct feature
-// of the syntax
-enum NodeType {
-    NODE_STRING,
-    // NODE_VAR_DECL,
-    NODE_FUNC_CALL,
-};
-
-typedef struct Node{
-    enum NodeType type;
-    union {
-        // NODE_STRING
-        struct {
-            char *data;
-            size_t len;
-        } string;
-
-        // NODE_FUNC_CALL
-        struct {
-            struct { char *data; size_t len; } name;
-            struct Node** args;
-            int arg_count;
-        } func_call;
-    };
-} Node;
 
 //--------------//
 // Global state //
@@ -54,8 +26,7 @@ void next_token() {
 Node *node_string(Token str) {
     Node *n = arena_alloc(arena, sizeof(Node));
     n->type = NODE_STRING;
-    n->string.data = str.data;
-    n->string.len = str.len;
+    n->string.content = sv_from_parts(str.data, str.len);
 
     return n;
 }
@@ -141,7 +112,7 @@ void print_node(Node* node, int indent) {
     switch (node->type) {
         case NODE_STRING:
             print_indent(indent);
-            printf("String: \"%.*s\"\n", (int)node->string.len, node->string.data);
+            printf("String: \""SV_Fmt"\n", SV_Arg(node->string.content));
             break;
 
         case NODE_FUNC_CALL:
