@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include "lexer.h"
+#include "string_builder.h"
+#include "string_view.h"
 
 #include <stdio.h>
 
@@ -29,9 +31,10 @@ const char *keywords[] = {
     "not", "and", "or"
 };
 
-bool is_keyword(const char *str, int len) {
+bool is_keyword(const char *str, size_t len) {
+    StringView chunk = sv_from_parts(str, len);
     for (int i=0; i<sizeof(keywords)/sizeof(*keywords); i++) {
-        if (strncmp(str, keywords[i], len) == 0 && keywords[i][len] == '\0')
+        if (sv_equals_cstr(chunk, keywords[i]))
             return true;
     }
     return false;
@@ -55,7 +58,7 @@ void lexer_init(const char* input) {
     current = src;
 }
 
-Token token_next() {
+Token token_next(Arena *a) {
     while(is_space(peek())) current++; // skip leading whitespace
 
     const char* start = current;
@@ -84,11 +87,42 @@ Token token_next() {
 
     // string literal
     if (c == '"') {
-        while (advance() != '"') {
-            if (peek() == '\0')
-                return (Token) { TOKEN_UNKNOWN, (char*)start, current - start };
+        StringBuilder *temp = sb_new();
+
+        while (true) {
+            char ch = advance();
+
+            if (ch == '\0') return (Token) { TOKEN_UNKNOWN, (char*)start, current - start };
+            if (ch == '"')  break;
+
+            if (ch == '\\') {
+                ch = advance();
+                switch (ch) {
+                    case 'n':
+                        sb_append_char(temp, '\n');
+                        break;
+                    case '\\':
+                        sb_append_char(temp, '\\');
+                        break;
+                    case '"':
+                        sb_append_char(temp, '"');
+                        break;
+                    default:
+                        sb_append_char(temp, ch); // unknown escape character, keep as is lol
+                        break;
+                }
+            }
+            else {
+                sb_append_char(temp, ch);
+            }
         }
-        return (Token) { TOKEN_STRING, (char*)start + 1, current - start - 2 };
+
+        size_t len = temp->len;
+        char *str = arena_alloc(a, len);
+        memcpy(str, temp->data, len);
+        sb_free(temp);
+
+        return (Token) { TOKEN_STRING, sv_from_parts(str, len) };
     }
 
     // keywords / identifiers
@@ -133,5 +167,5 @@ void token_print(Token t) {
         case TOKEN_UNKNOWN: typeStr = "TOKEN_UNKNOWN"; break;
     }
 
-    printf("%s: %.*s\n", typeStr, (int)t.len, t.data);
+    printf("%s: "SV_Fmt"\n", typeStr, SV_Arg(t.content));
 }

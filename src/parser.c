@@ -15,7 +15,7 @@ Arena *arena;
 Token current_token;
 
 void next_token() {
-    current_token = token_next();
+    current_token = token_next(arena);
 }
 
 //-----------//
@@ -26,7 +26,7 @@ void next_token() {
 Node *node_string(Token str) {
     Node *n = arena_alloc(arena, sizeof(Node));
     n->type = NODE_STRING;
-    n->string.content = sv_from_parts(str.data, str.len);
+    n->string.content = str.content;
 
     return n;
 }
@@ -34,8 +34,7 @@ Node *node_string(Token str) {
 Node *node_func_call(Token name, Node *arg) {
     Node *n = arena_alloc(arena, sizeof(Node));
     n->type = NODE_FUNC_CALL;
-    n->func_call.name.data = name.data;
-    n->func_call.name.len = name.len;
+    n->func_call.name = name.content;
 
     n->func_call.args = arena_alloc(arena, sizeof(Node *));
     n->func_call.args[0] = (struct Node*)arg;
@@ -54,7 +53,7 @@ void parser_init(Arena *a, const char* input) {
     arena = a;
 
     lexer_init(input);
-    current_token = token_next();
+    current_token = token_next(arena);
 }
 
 Node* parse_func_call(Token name) {

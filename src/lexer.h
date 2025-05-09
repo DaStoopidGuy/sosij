@@ -1,4 +1,6 @@
 #pragma once
+#include "arena.h"
+#include "string_view.h"
 #include <stdlib.h>
 
 enum TokenType {
@@ -25,10 +27,9 @@ enum TokenType {
 
 typedef struct {
     enum TokenType type;
-    char *data;
-    size_t len;
+    StringView content;
 } Token;
 
 void lexer_init(const char* input);
-Token token_next();
+Token token_next(Arena *a);
 void token_print(Token t);

@@ -3,7 +3,6 @@
 #include "parser.h"
 #include <stdlib.h>
 
-
 int main() {
     const char* source = read_file_to_buffer("test.sosij");
 

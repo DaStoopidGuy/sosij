@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -MMD -MP
+CFLAGS := -MMD -MP -ggdb
 
 BUILD_DIR := build
 TARGET := $(BUILD_DIR)/sosijc
