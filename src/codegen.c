@@ -8,7 +8,7 @@
 FILE *out;
 
 StringBuilder *data;
-StringBuilder *text;
+StringBuilder *start;
 
 void write_data_section() {
     fprintf(out, 
@@ -24,7 +24,7 @@ void write_text_section() {
 
     // entry point
     fprintf(out,
-            "_start:\n%s\n", sb_get_cstr(text)
+            "_start:\n%s\n", sb_get_cstr(start)
             );
 
     // exit(<error-code>)
@@ -62,19 +62,12 @@ void emit_string_literal(StringBuilder *sb, StringView sv) {
 void generate(Node* node, FILE* outfile) {
     out = outfile;
     data = sb_new();
-    text = sb_new();
+    start = sb_new();
 
     switch (node->type) {
         case NODE_FUNC_CALL:
             {
                 if (sv_equals_cstr(node->func_call.name, "print")) {
-                    // write .data section for hardcoded string
-                    // sb_appendf(data,
-                    //         "msg db \"" SV_Fmt "\"\n"
-                    //         "len equ $ - msg\n"
-                    //         ,SV_Arg(node->func_call.args[0]->string.content)
-                    //         );
-
                     sb_appendf(data,
                             "msg db "
                             );
@@ -85,7 +78,7 @@ void generate(Node* node, FILE* outfile) {
                             );
 
                     // write _start label (entry point instruction)
-                    sb_appendf(text, 
+                    sb_appendf(start, 
                             "mov rax, 1\n" // rax = 1 is write syscall
                             "mov rdi, 1\n" // rdi needs file descriptor, rdi 1 for write is `stdout`
                             "mov rsi, msg\n" // buffer
@@ -102,5 +95,5 @@ void generate(Node* node, FILE* outfile) {
     write_text_section();
 
     sb_free(data);
-    sb_free(text);
+    sb_free(start);
 }

@@ -8,13 +8,10 @@ typedef struct {
 } Arena;
 
 // creates an Arena with the provided size
-// - allocates memory (needs to be destroyed)
-// - returns pointer to allocated Arena struct
-Arena *arena_create(size_t size);
+void arena_init(Arena *a, size_t size);
 
 // Destroy existing arena
 // - frees Arena memory
-// - frees Arena struct
 void arena_destroy(Arena *a);
 
 // Allocates memory on existing arena
@@ -27,28 +24,20 @@ void *arena_alloc(Arena *a, size_t size);
 //   previously allocated memory
 void arena_reset(Arena *a);
 
-#ifdef ARENA_IMPLEMENTATION
-Arena *arena_create(size_t size)
+#ifdef ARENA_IMPL
+void arena_init(Arena *a, size_t size)
 {
-    Arena* a = malloc(sizeof(Arena));
-    if (!a) return NULL;
-
     a->base = malloc(size);
-    if (!a->base)
-    {
-        free(a);
-        return NULL;
-    }
-
-    a->size = size;
+    a->size = a->base ? size : 0;
     a->offset = 0;
-    return a;
 }
 
 void arena_destroy(Arena *a)
 {
     free(a->base);
-    free(a);
+    a->base = NULL;
+    a->size = 0;
+    a->offset = 0;
 }
 
 void *arena_alloc(Arena *a, size_t size)
@@ -66,4 +55,4 @@ void arena_reset(Arena *a)
     a->offset = 0;
 }
 
-#endif  // ARENA_IMPLEMENTATION
+#endif  // ARENA_IMPL

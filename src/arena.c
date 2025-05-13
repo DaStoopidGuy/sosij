@@ -1,2 +1,2 @@
-#define ARENA_IMPLEMENTATION
+#define ARENA_IMPL
 #include "arena.h"
