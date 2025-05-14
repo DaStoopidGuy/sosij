@@ -33,7 +33,7 @@ const char *keywords[] = {
 
 bool is_keyword(const char *str, size_t len) {
     StringView chunk = sv_from_parts(str, len);
-    for (int i=0; i<sizeof(keywords)/sizeof(*keywords); i++) {
+    for (size_t i=0; i<sizeof(keywords)/sizeof(*keywords); i++) {
         if (sv_equals_cstr(chunk, keywords[i]))
             return true;
     }
@@ -64,25 +64,25 @@ Token token_next(Arena *a) {
     const char* start = current;
 
     if (peek() == '\0')
-        return (Token) { TOKEN_EOF };
+        return (Token) { TOKEN_EOF, sv_from_parts(NULL, 0) };
 
     char c = advance(); 
 
     // single-character tokens
     switch (c) {
-        case '+' : return (Token) { TOKEN_PLUS,      (char*)start, 1 };
-        case '-' : return (Token) { TOKEN_MINUS,     (char*)start, 1 };
-        case '*' : return (Token) { TOKEN_STAR,      (char*)start, 1 };
-        case '/' : return (Token) { TOKEN_SLASH,     (char*)start, 1 };
-        case '<' : return (Token) { TOKEN_LESS,    (char*)start, 1 };
-        case '>' : return (Token) { TOKEN_GREATER,    (char*)start, 1 };
-        case '=' : return (Token) { TOKEN_EQUALS,    (char*)start, 1 };
-        case ',' : return (Token) { TOKEN_COMMA,    (char*)start, 1 };
-        case ';' : return (Token) { TOKEN_SEMICOLON, (char*)start, 1 };
-        case '(' : return (Token) { TOKEN_LPAREN,    (char*)start, 1 };
-        case ')' : return (Token) { TOKEN_RPAREN,    (char*)start, 1 };
-        case '{' : return (Token) { TOKEN_LBRACE,    (char*)start, 1 };
-        case '}' : return (Token) { TOKEN_RBRACE,    (char*)start, 1 };
+        case '+' : return (Token) { TOKEN_PLUS,      sv_from_parts(start, 1) };
+        case '-' : return (Token) { TOKEN_MINUS,     sv_from_parts(start, 1) };
+        case '*' : return (Token) { TOKEN_STAR,      sv_from_parts(start, 1) };
+        case '/' : return (Token) { TOKEN_SLASH,     sv_from_parts(start, 1) };
+        case '<' : return (Token) { TOKEN_LESS,      sv_from_parts(start, 1) };
+        case '>' : return (Token) { TOKEN_GREATER,   sv_from_parts(start, 1) };
+        case '=' : return (Token) { TOKEN_EQUALS,    sv_from_parts(start, 1) };
+        case ',' : return (Token) { TOKEN_COMMA,     sv_from_parts(start, 1) };
+        case ';' : return (Token) { TOKEN_SEMICOLON, sv_from_parts(start, 1) };
+        case '(' : return (Token) { TOKEN_LPAREN,    sv_from_parts(start, 1) };
+        case ')' : return (Token) { TOKEN_RPAREN,    sv_from_parts(start, 1) };
+        case '{' : return (Token) { TOKEN_LBRACE,    sv_from_parts(start, 1) };
+        case '}' : return (Token) { TOKEN_RBRACE,    sv_from_parts(start, 1) };
     }
 
     // string literal
@@ -92,7 +92,7 @@ Token token_next(Arena *a) {
         while (true) {
             char ch = advance();
 
-            if (ch == '\0') return (Token) { TOKEN_UNKNOWN, (char*)start, current - start };
+            if (ch == '\0') return (Token) { TOKEN_UNKNOWN, sv_from_parts(start, current - start) };
             if (ch == '"')  break;
 
             if (ch == '\\') {
@@ -130,17 +130,17 @@ Token token_next(Arena *a) {
         while(is_alpha(peek()) || is_digit(peek())) advance();
         int len = current - start;
         enum TokenType type = is_keyword(start, len) ? TOKEN_KEYWORD : TOKEN_IDENTIFIER;
-        return (Token) { type, (char*)start, len };
+        return (Token) { type, sv_from_parts(start, len) };
     }
 
     // Numeros
     if (is_digit(c)) {
         while(is_digit(peek())) advance();
-        return (Token) { TOKEN_NUMERIC, (char*)start, current - start };
+        return (Token) { TOKEN_NUMERIC, sv_from_parts(start, current - start) };
     }
 
     // Else, unknown token
-    return (Token) { TOKEN_UNKNOWN, (char*)start, 1 };
+    return (Token) { TOKEN_UNKNOWN, sv_from_parts(start, 1) };
 }
 
 void token_print(Token t) {

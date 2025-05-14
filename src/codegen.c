@@ -37,24 +37,45 @@ void write_text_section() {
 }
 
 void emit_string_literal(StringBuilder *sb, StringView sv) {
-    for (int i=0; i<sv.len; i++) {
+    bool quote_started = false;
+
+    for (size_t i=0; i<sv.len; i++) {
         char c = sv.data[i];
 
         switch (c) {
             case '\n':
+                if (quote_started) {
+                    sb_appendf(sb, "\"");
+                    quote_started = false;
+                    sb_appendf(sb, ", ");
+                }
                 sb_appendf(sb, "10");
                 break;
             case '\"':
+                if (quote_started) {
+                    sb_appendf(sb, "\"");
+                    quote_started = false;
+                    sb_appendf(sb, ", ");
+                }
                 sb_appendf(sb, "'\"'");
                 break;
             case '\\':
+                if (quote_started) {
+                    sb_appendf(sb, "\"");
+                    quote_started = false;
+                    sb_appendf(sb, ", ");
+                }
                 sb_appendf(sb, "'\\'");
                 break;
             default:
-                sb_appendf(sb, "'%c'", c);
+                if (!quote_started) {
+                    sb_appendf(sb, "\"");
+                    quote_started = true;
+                }
+                sb_appendf(sb, "%c", c);
         }
 
-        if (i < sv.len - 1)
+        if (!quote_started && i < sv.len - 1)
             sb_appendf(sb, ", ");
     }
 }
