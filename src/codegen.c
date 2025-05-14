@@ -78,6 +78,10 @@ void emit_string_literal(StringBuilder *sb, StringView sv) {
         if (!quote_started && i < sv.len - 1)
             sb_appendf(sb, ", ");
     }
+
+    // terminate string literal if missing end quote
+    if (quote_started)
+        sb_appendf(sb, "\"");
 }
 
 void generate(Node* node, FILE* outfile) {
