@@ -1,2 +1,4 @@
-print("Helloo\n World\n");
-
+main() {
+    print("Helloo World\n")
+    print("Program has started\n")
+}

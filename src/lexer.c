@@ -15,7 +15,7 @@
  */
 
 bool is_space(char c) {
-    return c==' ' || c=='\n' || c=='\t' || c=='\r';
+    return c==' ' || c=='\t' || c=='\r';
 }
 
 bool is_alpha(char c) {
@@ -74,15 +74,72 @@ Token token_next(Arena *a) {
         case '-' : return (Token) { TOKEN_MINUS,     sv_from_parts(start, 1) };
         case '*' : return (Token) { TOKEN_STAR,      sv_from_parts(start, 1) };
         case '/' : return (Token) { TOKEN_SLASH,     sv_from_parts(start, 1) };
-        case '<' : return (Token) { TOKEN_LESS,      sv_from_parts(start, 1) };
-        case '>' : return (Token) { TOKEN_GREATER,   sv_from_parts(start, 1) };
-        case '=' : return (Token) { TOKEN_EQUALS,    sv_from_parts(start, 1) };
         case ',' : return (Token) { TOKEN_COMMA,     sv_from_parts(start, 1) };
-        case ';' : return (Token) { TOKEN_SEMICOLON, sv_from_parts(start, 1) };
+        case '\n': return (Token) { TOKEN_NEWLINE,   sv_from_parts(start, 1) };
         case '(' : return (Token) { TOKEN_LPAREN,    sv_from_parts(start, 1) };
         case ')' : return (Token) { TOKEN_RPAREN,    sv_from_parts(start, 1) };
         case '{' : return (Token) { TOKEN_LBRACE,    sv_from_parts(start, 1) };
         case '}' : return (Token) { TOKEN_RBRACE,    sv_from_parts(start, 1) };
+    }
+
+    // = assignment and == equality operators
+    if (c == '=') {
+        if (peek() == '=') {
+            advance();
+            return (Token) { TOKEN_EQ, sv_from_parts(start, 2) };
+        }
+        else
+            return (Token) { TOKEN_ASSIGN, sv_from_parts(start, 1) };
+    }
+
+    // > greater than and greater than or equals operator
+    if (c == '>') {
+        if (peek() == '=') {
+            advance();
+            return (Token) { TOKEN_GTEQ, sv_from_parts(start, 2) };
+        }
+        else
+            return (Token) { TOKEN_GT, sv_from_parts(start, 1) };
+    }
+
+    // < less than and <= less than or equals operators
+    if (c == '<') {
+        if (peek() == '=') {
+            advance();
+            return (Token) { TOKEN_LTEQ, sv_from_parts(start, 2) };
+        }
+        else
+            return (Token) { TOKEN_LT, sv_from_parts(start, 1) };
+    }
+
+    // ! not and != not equals operators
+    if (c == '!') {
+        if (peek() == '=') {
+            advance();
+            return (Token) { TOKEN_NOTEQ, sv_from_parts(start, 2) };
+        }
+        else
+            return (Token) { TOKEN_NOT, sv_from_parts(start, 1) };
+    }
+
+    // && and operator
+    if (c == '&') {
+        if (peek() == '&') {
+            advance();
+            return (Token) { TOKEN_AND, sv_from_parts(start, 2) };
+        }
+        else
+            return (Token) { TOKEN_UNKNOWN, sv_from_parts(start, 1) };
+    }
+
+    // || or operator
+    if (c == '|') {
+        if (peek() == '|') {
+            advance();
+            return (Token) { TOKEN_OR, sv_from_parts(start, 2) };
+        }
+        else
+            return (Token) { TOKEN_UNKNOWN, sv_from_parts(start, 1) };
     }
 
     // string literal
@@ -153,19 +210,33 @@ void token_print(Token t) {
         case TOKEN_MINUS: typeStr = "TOKEN_MINUS"; break;
         case TOKEN_STAR: typeStr = "TOKEN_STAR"; break;
         case TOKEN_SLASH: typeStr = "TOKEN_SLASH"; break;
-        case TOKEN_LESS: typeStr = "TOKEN_LESS"; break;
-        case TOKEN_GREATER: typeStr = "TOKEN_GREATER"; break;
-        case TOKEN_EQUALS: typeStr = "TOKEN_EQUALS"; break;
+        case TOKEN_LT: typeStr = "TOKEN_LT"; break;
+        case TOKEN_GT: typeStr = "TOKEN_GT"; break;
+        case TOKEN_LTEQ: typeStr = "TOKEN_LTEQ"; break;
+        case TOKEN_GTEQ: typeStr = "TOKEN_GTEQ"; break;
+        case TOKEN_EQ: typeStr = "TOKEN_EQ"; break;
+        case TOKEN_NOTEQ: typeStr = "TOKEN_NOTEQ"; break;
+        case TOKEN_NOT: typeStr = "TOKEN_NOT"; break;
+        case TOKEN_AND: typeStr = "TOKEN_AND"; break;
+        case TOKEN_OR: typeStr = "TOKEN_OR"; break;
+        case TOKEN_ASSIGN: typeStr = "TOKEN_ASSIGN"; break;
         case TOKEN_LPAREN: typeStr = "TOKEN_LPAREN"; break;
         case TOKEN_RPAREN: typeStr = "TOKEN_RPAREN"; break;
         case TOKEN_LBRACE: typeStr = "TOKEN_LBRACE"; break;
         case TOKEN_RBRACE: typeStr = "TOKEN_RBRACE"; break;
         case TOKEN_COMMA: typeStr = "TOKEN_COMMA"; break;
-        case TOKEN_SEMICOLON: typeStr = "TOKEN_SEMICOLON"; break;
+        case TOKEN_NEWLINE: typeStr = "TOKEN_NEWLINE"; break;
         case TOKEN_STRING: typeStr = "TOKEN_STRING"; break;
         case TOKEN_EOF: typeStr = "TOKEN_EOF"; break;
         case TOKEN_UNKNOWN: typeStr = "TOKEN_UNKNOWN"; break;
     }
 
-    printf("%s: "SV_Fmt"\n", typeStr, SV_Arg(t.content));
+    if (
+        t.type == TOKEN_KEYWORD ||
+        t.type == TOKEN_IDENTIFIER ||
+        t.type == TOKEN_STRING
+        )
+        printf("%s: "SV_Fmt"\n", typeStr, SV_Arg(t.content));
+    else
+        printf("%s\n", typeStr);
 }

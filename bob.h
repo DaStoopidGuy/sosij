@@ -98,6 +98,13 @@ bool bob_check_file_exists(const char *filename);
 
 #define BOB_DA_INITIAL_CAP 8
 
+#define bob_da_init(da)     \
+    do {                    \
+        (da)->items = NULL; \
+        (da)->len = 0;      \
+        (da)->cap = 0;      \
+    } while(0)              \
+
 #define bob_da_free(da)    \
     do {                   \
         free((da)->items); \

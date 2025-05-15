@@ -12,6 +12,7 @@ enum NodeType {
     NODE_STRING,
     // NODE_VAR_DECL,
     NODE_FUNC_CALL,
+    NODE_FUNC_DEF,
 };
 
 typedef struct Node{
@@ -25,13 +26,33 @@ typedef struct Node{
         // NODE_FUNC_CALL
         struct {
             StringView name;
-            struct Node** args;
-            int arg_count;
+            struct {
+                struct Node **items;
+                size_t len;
+                size_t cap;
+            } args;
         } func_call;
+
+        // NODE_FUNC_DEF
+        struct {
+            StringView name;
+            struct {
+                struct Node **items;
+                size_t len;
+            } args;
+            enum NodeType ret_type;
+
+            // function body statements
+            struct {
+                struct Node **items;
+                size_t len;
+            } stmts;
+        } func_def;
     };
 } Node;
 
 void parser_init(Arena *, const char*);
 Node* parse_statement();
+Node *parse_func_def();
 void parse_program();
 void print_node(Node* node, int indent);

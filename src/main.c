@@ -10,10 +10,13 @@ int main() {
     arena_init(&parser_arena, 1024*1024*10); // 10 mB arena
     parser_init(&parser_arena, source);
 
-    Node *stmt = parse_statement();
+    Node *func = parse_func_def();
+    //print_node(func, 0);
 
     FILE *outfile = fopen("out.s", "w");
-    generate(stmt, outfile);
+    codegen_init(outfile);
+    codegen_generate(func);
+    codegen_write_and_deinit();
     fclose(outfile);
 
     // assemble and link
@@ -21,8 +24,8 @@ int main() {
     system("ld out.o -o out\n");
 
     // clean up
-    arena_destroy(&parser_arena);
     free((void *)source);
+    arena_destroy(&parser_arena);
 
     return 0;
 }

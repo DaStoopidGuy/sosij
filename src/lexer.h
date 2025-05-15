@@ -11,15 +11,22 @@ enum TokenType {
     TOKEN_MINUS,
     TOKEN_STAR,
     TOKEN_SLASH,
-    TOKEN_LESS, // <
-    TOKEN_GREATER, // >
-    TOKEN_EQUALS,
+    TOKEN_LT, // <
+    TOKEN_GT, // >
+    TOKEN_EQ, // ==
+    TOKEN_NOTEQ, // !=
+    TOKEN_LTEQ, // <=
+    TOKEN_GTEQ, // >=
+    TOKEN_ASSIGN, // =
+    TOKEN_NOT, // !
+    TOKEN_AND, // &&
+    TOKEN_OR, // ||
     TOKEN_LPAREN,
     TOKEN_RPAREN,
     TOKEN_LBRACE,
     TOKEN_RBRACE,
     TOKEN_COMMA,
-    TOKEN_SEMICOLON,
+    TOKEN_NEWLINE,
     TOKEN_STRING, // string literal ("This is a string")
     TOKEN_EOF, // End Of File, Khatm. Tata. Bye-bye.
     TOKEN_UNKNOWN,
